@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0612">
+  <meta name="description" content="Một món quà nhỏ, một bầu trời kỷ niệm dành riêng cho em. Chúc mừng ngày Phụ nữ Việt Nam 20/10.">
+  <title>Anh ♥ Em · 20/10</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="universe" aria-hidden="true"></canvas>
+  <main id="stage">
+    <section class="scene active" id="intro" aria-label="Màn hoa mở đầu">
+      <canvas id="bloom-field" aria-hidden="true"></canvas>
+      <button id="open-curtain" class="intro-invitation" aria-label="Mở món quà">Một món quà dành riêng cho em <span>Chạm để mở ♡</span></button>
+    </section>
+    <section class="scene" id="card" aria-label="Thiệp chúc mừng 20 tháng 10" hidden>
+      <article class="gold-card">
+        <h1>Anh<span>♥</span>Em</h1>
+        <div class="card-content">
+          <button class="puzzle-heart" id="heart-button" aria-label="Bấm vào mảnh ghép trái tim để mở không gian kỷ niệm"><canvas id="puzzle" width="480" height="440"></canvas><span class="heart-hint">Bấm vào mảnh ghép trái tim</span></button>
+          <div class="occasion"><h2>Happy Women's<br><span>Day</span></h2><p class="month">October <span id="year">2026</span></p><div id="calendar" aria-label="Lịch tháng 10, ngày 20 được đánh dấu"></div></div>
+        </div>
+        <div class="flower-border" id="flower-border" aria-hidden="true"></div>
+      </article>
+    </section>
+    <section class="scene universe-scene" id="memories" aria-label="Không gian ảnh và lời chúc 3D" hidden><p class="memory-hint">Kéo để xoay không gian</p><button class="scene-prompt" data-next="sphere">Chạm vào những kỷ niệm <span>♡</span></button></section>
+    <section class="scene universe-scene" id="sphere" aria-label="Quả cầu ảnh xoay" hidden><button class="scene-prompt" data-next="gallery">Cả thế giới của anh, là em <span>♡</span></button></section>
+    <section class="scene" id="gallery" aria-label="Bộ ảnh kỷ niệm" hidden><div class="gallery-grid" id="gallery-grid"></div><button class="scene-prompt" data-next="envelope">Có một điều anh muốn nói với em <span>→</span></button></section>
+    <section class="scene" id="envelope" aria-label="Phong thư gửi em" hidden><div class="floating-photos" id="floating-photos"></div><button class="envelope" id="envelope-button" aria-label="Mở thư gửi em"><span class="envelope-back"></span><span class="envelope-paper">Gửi em ♡</span><span class="envelope-front"></span><span class="envelope-flap"></span><span class="seal">♥</span></button><p class="envelope-prompt">Em có một lá thư…</p></section>
+  </main>
+  <nav class="controls" aria-label="Điều khiển trải nghiệm"><button id="previous" title="Cảnh trước" aria-label="Cảnh trước">‹</button><div class="scene-dots" id="scene-dots"></div><button id="next" title="Cảnh tiếp" aria-label="Cảnh tiếp">›</button><span class="divider"></span><button id="music-toggle" title="Bật nhạc" aria-label="Bật nhạc" aria-pressed="false">♫</button><button id="settings-toggle" title="Thay ảnh và lời chúc" aria-label="Thay ảnh và lời chúc">⚙</button><button id="fullscreen" title="Toàn màn hình" aria-label="Toàn màn hình">⛶</button></nav>
+  <dialog id="letter-dialog" aria-labelledby="letter-title"><div class="letter-stack"><article class="letter"><button class="close-letter" aria-label="Đóng thư">×</button><span class="letter-decoration top">❧ ♥</span><h2 id="letter-title">Gửi em !</h2><p id="letter-text"></p><p class="signature" id="letter-signature">Saphocit,</p><span class="letter-decoration bottom">♧ ♡</span></article></div></dialog>
+  <dialog id="photo-dialog" aria-label="Xem ảnh"><button class="close-photo" aria-label="Đóng ảnh">×</button><img id="large-photo" alt="Ảnh kỷ niệm"></dialog>
+  <dialog id="settings-dialog" aria-labelledby="settings-title"><form method="dialog" id="settings-form"><button class="close-settings" value="cancel" aria-label="Đóng cài đặt">×</button><h2 id="settings-title">Món quà của riêng bạn</h2><label>Chọn ảnh kỷ niệm<input id="photo-input" type="file" accept="image/*" multiple></label><small>Chọn ít nhất 1 ảnh. Ảnh chỉ được xử lý trong trình duyệt.</small><label>Lời nhắn<textarea id="message-input" rows="4"></textarea></label><label>Ký tên<input id="signature-input" maxlength="60"></label><label>Thay nhạc<input id="audio-input" type="file" accept="audio/*"></label><label class="check-label"><input type="checkbox" id="auto-input" checked> Tự động chuyển cảnh</label><button class="save-settings" value="save">Lưu lời chúc</button></form></dialog>
+  <audio id="music" src="assets/music.webm" loop preload="none"></audio>
+  <script src="config.js"></script><script src="bloom.js"></script><script src="effects.js"></script><script src="memory-world.js"></script><script src="app.js"></script>
+</body>
+</html>
