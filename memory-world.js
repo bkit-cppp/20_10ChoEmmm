@@ -1,5 +1,5 @@
 // A perspective-projected 3D scene: volumetric flower, orbiting photo planes,
-// text planes and a luminous ring. No network or external engine is required.
+// text planes, a glowing sun and spiral galaxy stars.
 (() => {
   'use strict';
   window.createMemoryWorld = ({reduced,wishes}) => {
@@ -8,11 +8,24 @@
     const clamp=n=>Math.max(0,Math.min(1,n));
     const points=Array.from({length:2700},()=>({angle:random()*Math.PI*2,r:Math.sqrt(random()),depth:(random()-.5)*.065,phase:random()*Math.PI*2,size:.6+random()*1.1}));
     const satellites=Array.from({length:58},(_,i)=>({angle:random()*Math.PI*2,radius:.38+random()*.68,y:(random()-.5)*1.2,phase:random()*Math.PI*2,index:i,photo:i%3===0}));
-    const stars=Array.from({length:200},()=>({x:(random()-.5)*3,y:(random()-.5)*2,z:(random()-.5)*3,phase:random()*6.28}));
+    const stars=Array.from({length:340},()=>({x:(random()-.5)*3,y:(random()-.5)*2,z:(random()-.5)*3,phase:random()*6.28}));
+    const galaxy=Array.from({length:560},(_,i)=>({radius:.045+Math.sqrt(random())*.32,arm:i%3,scatter:(random()-.5)*.65,depth:(random()-.5)*.014,phase:random()*Math.PI*2,size:.6+random()*1.1}));
     let textures=[],yaw=0,pitch=0,aimX=0,aimY=0,viewX=0,viewY=0,zoom=1;
     const glow=document.createElement('canvas');glow.width=glow.height=32;
     const g=glow.getContext('2d'),gradient=g.createRadialGradient(16,16,0,16,16,16);
     gradient.addColorStop(0,'#fff5ff');gradient.addColorStop(.18,'#efb8ffdd');gradient.addColorStop(.4,'#bd76ee55');gradient.addColorStop(1,'#b75edc00');g.fillStyle=gradient;g.fillRect(0,0,32,32);
+    const starLights=['#ffe6b2','#e3c4ff','#badaff'].map(color=>{
+      const image=document.createElement('canvas');image.width=image.height=24;
+      const p=image.getContext('2d'),light=p.createRadialGradient(12,12,0,12,12,12);
+      light.addColorStop(0,'#ffffff');light.addColorStop(.12,color);light.addColorStop(.35,color+'88');light.addColorStop(1,color+'00');p.fillStyle=light;p.fillRect(0,0,24,24);return image;
+    });
+    // Cache the sun's photosphere and corona once, rather than blurring each frame.
+    const sunTexture=document.createElement('canvas');sunTexture.width=sunTexture.height=256;
+    const s=sunTexture.getContext('2d'),corona=s.createRadialGradient(128,128,0,128,128,128);
+    corona.addColorStop(0,'#fffde8ff');corona.addColorStop(.22,'#fff2adff');corona.addColorStop(.31,'#ffce6bd9');
+    corona.addColorStop(.48,'#ff9b4a58');corona.addColorStop(.72,'#ff84521c');corona.addColorStop(1,'#ff6a3000');s.fillStyle=corona;s.fillRect(0,0,256,256);
+    const surface=s.createRadialGradient(119,117,0,128,128,34);
+    surface.addColorStop(0,'#ffffef');surface.addColorStop(.6,'#fff1ad');surface.addColorStop(1,'#ffb334');s.fillStyle=surface;s.beginPath();s.arc(128,128,34,0,Math.PI*2);s.fill();
     function rotate(p,yaw,pitch){const x=p.x*Math.cos(yaw)+p.z*Math.sin(yaw),z=-p.x*Math.sin(yaw)+p.z*Math.cos(yaw);return{x,y:p.y*Math.cos(pitch)-z*Math.sin(pitch),z:p.y*Math.sin(pitch)+z*Math.cos(pitch)};}
     return {
       setImages(images){textures=images.filter(i=>i.naturalWidth).map(image=>{const c=document.createElement('canvas');c.width=c.height=192;const p=c.getContext('2d'),s=Math.max(192/image.naturalWidth,192/image.naturalHeight),w=192/s,h=192/s;p.drawImage(image,(image.naturalWidth-w)/2,(image.naturalHeight-h)/2,w,h,0,0,192,192);return c;});},
@@ -27,6 +40,12 @@
         const project=raw=>{const p=rotate(raw,cyaw,cpitch),s=3.6/Math.max(.8,3.6-p.z);return{x:width/2+p.x*unit*s,y:height*.47+p.y*unit*s,z:p.z,s};};
         const list=[];
         for(const star of stars){const p=project(star);list.push({kind:'star',p,phase:star.phase});}
+        // Three spiral arms surround the sun with depth.
+        for(const star of galaxy){
+          const a=star.arm*Math.PI*2/3+star.radius*15+star.scatter+(reduced?0:t*.024/(.2+star.radius));
+          list.push({kind:'galaxy',p:project({x:Math.cos(a)*star.radius,y:.335+Math.sin(a)*star.radius*.18+star.depth,z:Math.sin(a)*star.radius*.72}),phase:star.phase,size:star.size,color:star.arm});
+        }
+        list.push({kind:'sun',p:project({x:0,y:.335,z:.012})});
         // Curved petals and a real thickness along Z form a rotating 3D flower.
         const spin=reduced?0:t*.15;
         for(const point of points){
@@ -36,12 +55,6 @@
           const twist=spin*.24,world={x:turned.x*Math.cos(twist)-turned.y*Math.sin(twist),y:turned.x*Math.sin(twist)+turned.y*Math.cos(twist)-.1,z:turned.z};
           list.push({kind:'particle',p:project(world),phase:point.phase,size:point.size});
         }
-        // The ring is in the XZ plane. Its back/front halves sort behind/in front.
-        for(let i=0;i<260;i++){
-          const a=i/260*Math.PI*2+(reduced?0:t*.28),r=.16+(i%3)*.003;
-          list.push({kind:'ring',p:project({x:Math.cos(a)*r,y:.255+Math.sin(a)*.012,z:Math.sin(a)*r*.85}),phase:a});
-        }
-        list.push({kind:'core',p:project({x:0,y:.24,z:0})});
         // Orbiting cards keep their own plane orientations and pass behind the flower.
         for(const item of satellites){
           const a=item.angle+(reduced?0:t*(item.index%2?-.035:.026));
@@ -60,11 +73,11 @@
           const depth=clamp((p.z+1.1)/2.2),alpha=entrance*(.3+.7*depth);
           if(item.kind==='particle'){
             const size=(1.6+item.size)*p.s;ctx.globalAlpha=entrance*(.55+.35*Math.sin(t*1.4+item.phase)**2);ctx.drawImage(glow,p.x-size*1.7,p.y-size*1.7,size*3.4,size*3.4);
-          }else if(item.kind==='ring'){
-            const size=4.2*p.s;ctx.globalAlpha=entrance*.8;ctx.drawImage(glow,p.x-size,p.y-size,size*2,size*2);
-          }else if(item.kind==='core'){
-            const radius=unit*.038*p.s,shade=ctx.createRadialGradient(p.x-radius*.4,p.y-radius*.45,0,p.x,p.y,radius);
-            shade.addColorStop(0,'#3a143d');shade.addColorStop(.45,'#120717');shade.addColorStop(1,'#020104');ctx.globalAlpha=entrance;ctx.fillStyle=shade;ctx.beginPath();ctx.arc(p.x,p.y,radius,0,Math.PI*2);ctx.fill();
+          }else if(item.kind==='galaxy'){
+            const size=(1.8+item.size)*p.s;ctx.globalAlpha=entrance*(.25+.45*Math.sin(t*.8+item.phase)**2);ctx.drawImage(starLights[item.color],p.x-size*1.8,p.y-size*1.8,size*3.6,size*3.6);
+          }else if(item.kind==='sun'){
+            const radius=unit*.105*p.s,pulse=reduced?1:1+Math.sin(t*1.5)*.025;
+            ctx.globalAlpha=entrance;ctx.drawImage(sunTexture,p.x-radius*pulse,p.y-radius*pulse,radius*2*pulse,radius*2*pulse);
           }else if(item.kind==='photo'){
             window.GiftEffects.drawPhotoQuad(ctx,textures[item.index%Math.max(1,textures.length)],item.corners,alpha);
           }else if(item.kind==='text'){

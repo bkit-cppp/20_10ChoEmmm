@@ -12,6 +12,7 @@ dialog{border:0;padding:0;color:#502a39}dialog::backdrop{background:#030207ad;ba
 .memory-3d #stage{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
 .memory-3d #stage:active{cursor:grabbing}
 .memory-hint{position:absolute;bottom:max(105px,13vh);left:50%;transform:translateX(-50%);font-family:Arial,sans-serif;font-size:11px;letter-spacing:1px;color:#d5acce88;white-space:nowrap;pointer-events:none}
+@media(min-width:700px){.memory-hint{left:24px;bottom:24px;transform:none}}
 .letter .signature:empty{display:none}
 .puzzle-heart .heart-hint{opacity:0;animation:none;transition:opacity .6s}
 .puzzle-heart.puzzle-complete .heart-hint{opacity:1;animation:hint 3s infinite}

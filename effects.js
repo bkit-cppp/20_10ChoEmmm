@@ -86,13 +86,13 @@
     ctx.transform(x[0], y[0], x[1], y[1], x[2], y[2]); ctx.drawImage(image, 0, 0); ctx.restore();
   }
   const uv = [{x: 0, y: 0}, {x: 192, y: 0}, {x: 192, y: 192}, {x: 0, y: 192}];
-  function quad(ctx, image, points, alpha) {
+  function quad(ctx, image, points, alpha, outlined = true) {
     if (!image || alpha <= .01) return;
     ctx.globalAlpha = alpha;
     triangle(ctx, image, [points[0], points[1], points[2]], [uv[0], uv[1], uv[2]]);
     triangle(ctx, image, [points[0], points[2], points[3]], [uv[0], uv[2], uv[3]]);
     ctx.beginPath(); points.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.closePath();
-    ctx.strokeStyle = '#fff1db66'; ctx.lineWidth = .45; ctx.stroke();
+    if (outlined) { ctx.strokeStyle = '#fff1db66'; ctx.lineWidth = .45; ctx.stroke(); }
   }
   function signedArea(p) { return (p[1].x-p[0].x)*(p[3].y-p[0].y)-(p[1].y-p[0].y)*(p[3].x-p[0].x); }
   function createPhotoWorld(reduced) {

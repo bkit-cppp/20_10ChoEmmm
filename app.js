@@ -19,9 +19,11 @@
   let signature = localStorage.getItem(signatureKey) || config.signature;
   let musicOn = false, lastFrame = 0, showLetterTimer;
   const objectUrls = [];
-  // Reproducible positions keep the animation stable across resizes.
+
   let seed = 20102026;
-  function random() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
+  function random() { 
+    seed = (seed * 1664525 + 1013904223) >>> 0; 
+    return seed / 4294967296; }
   const stars = Array.from({ length: 390 }, () => ({ x: random(), y: random(), r: random() * 1.2 + .2, phase: random() * Math.PI * 2, speed: random() * .5 + .3 }));
   function resize() {
     width = innerWidth; height = innerHeight; dpr = Math.min(devicePixelRatio || 1, 2);
